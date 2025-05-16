@@ -9,7 +9,6 @@
 #include "agent.hh"
 #include "interface.hh"
 #include "tilemap.hh"
-#include "flow_map.hh"
 
 using namespace std;
 

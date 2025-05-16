@@ -11,7 +11,6 @@ add_executable(platformer_nav
 	src/physics.cc
 	src/interface.cc
 	src/tilemap.cc
-	src/flow_map.cc
 )
 
 target_link_libraries(platformer_nav box2d raylib)
