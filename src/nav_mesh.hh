@@ -29,5 +29,7 @@ private:
 
 public:
 	NavMesh(Tilemap& tilemap);
-	~NavMesh();
+
+	void generate();
+	void render();
 };

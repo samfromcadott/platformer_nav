@@ -29,7 +29,11 @@ Vector2 get_target() {
 	return Vector2Divide( GetScreenToWorld2D( GetMousePosition(), camera ), Vector2 {world_scale, world_scale} );
 }
 
-void get_input(Tilemap& tilemap, Agent& agent) {
+void get_input(Tilemap& tilemap, NavMesh& nav_mesh, Agent& agent) {
+	if ( IsKeyPressed(KEY_R) ) {
+		nav_mesh.generate();
+	}
+
 	if ( !inside_map(tilemap) ) return;
 
 	if ( IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ) {
