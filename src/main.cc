@@ -15,7 +15,7 @@ using namespace std;
 
 int main(int argc, char const *argv[]) {
 	// Create window
-	InitWindow(800, 600, "Platformer Navigation Test");
+	InitWindow(1280, 720, "Platformer Navigation Test");
 	SetTargetFPS(60);
 
 	auto world = init_world();
