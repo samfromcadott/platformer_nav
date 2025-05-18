@@ -51,8 +51,6 @@ void NavMesh::generate() {
 
 	nodes.shrink_to_fit();
 	edges.shrink_to_fit();
-
-	std::cout << edges.size() << '\n';
 }
 
 void NavMesh::render() {
