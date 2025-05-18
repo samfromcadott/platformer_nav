@@ -30,16 +30,13 @@ Vector2 get_target() {
 }
 
 void get_input(Tilemap& tilemap, NavMesh& nav_mesh, Agent& agent) {
-	if ( IsKeyPressed(KEY_R) ) {
-		nav_mesh.generate();
-	}
-
 	if ( !inside_map(tilemap) ) return;
 
 	if ( IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ) {
 		Vector2 coord = Vector2Divide( GetScreenToWorld2D( GetMousePosition(), camera ), Vector2 {Tilemap::tile_size, Tilemap::tile_size} );
 		tilemap.toggle_tile(coord.x, coord.y);
 		tilemap.generate_collision();
+		nav_mesh.generate();
 	}
 
 	if ( IsKeyPressed(KEY_ONE) ) {
