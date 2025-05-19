@@ -11,6 +11,20 @@ enum class Tile {
 	WALL,
 };
 
+struct TileCoord {
+	int x, y;
+
+	TileCoord() {
+		x = 0;
+		y = 0;
+	}
+
+	TileCoord(b2Vec2 v) {
+		this->x = v.x;
+		this->y = v.y;
+	}
+};
+
 class Tilemap {
 private:
 	b2WorldId world;
