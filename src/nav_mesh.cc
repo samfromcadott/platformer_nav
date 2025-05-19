@@ -34,7 +34,7 @@ void NavMesh::generate() {
 	for (int node = 0; node < nodes.size(); node++) {
 		for (int other = 0; other < nodes.size(); other++) {
 			if (node == other) continue; // You can't connect to yourself
-			// if ( has_connection(node, other) ) continue; // Check if already connected
+			if ( has_connection(node, other) ) continue; // Check if already connected
 
 			// Check for possible connections
 			if ( can_walk(node, other) ) {
@@ -91,13 +91,13 @@ void NavMesh::render() {
 
 bool NavMesh::has_connection(int a, int b) {
 	for (auto edge : nodes[a].edges) {
-		if (edges[edge].a == a || edges[edge].a == b) return true;
-		if (edges[edge].b == a || edges[edge].b == b) return true;
+		if (edges[edge].a == a && edges[edge].b == b) return true;
+		if (edges[edge].b == a && edges[edge].a == b) return true;
 	}
 
 	for (auto edge : nodes[b].edges) {
-		if (edges[edge].a == a || edges[edge].a == b) return true;
-		if (edges[edge].b == a || edges[edge].b == b) return true;
+		if (edges[edge].a == a && edges[edge].b == b) return true;
+		if (edges[edge].b == a && edges[edge].a == b) return true;
 	}
 
 	return false;
