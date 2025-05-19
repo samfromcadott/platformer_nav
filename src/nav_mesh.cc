@@ -45,6 +45,7 @@ void NavMesh::generate() {
 
 				edges.push_back(e);
 				nodes[node].edges.push_back(edges.size() - 1);
+				nodes[other].edges.push_back(edges.size() - 1);
 			}
 
 			else if ( can_fall(node, other) ) {
@@ -55,6 +56,7 @@ void NavMesh::generate() {
 
 				edges.push_back(e);
 				nodes[node].edges.push_back(edges.size() - 1);
+				nodes[other].edges.push_back(edges.size() - 1);
 			}
 		}
 	}
