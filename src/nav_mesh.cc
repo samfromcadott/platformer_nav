@@ -1,7 +1,10 @@
 #include <iostream>
+#include <algorithm>
 
 #include "nav_mesh.hh"
 #include "tilemap.hh"
+
+using namespace std;
 
 NavMesh::NavMesh(Tilemap& tilemap) : tilemap(tilemap) {
 	generate();
@@ -31,33 +34,64 @@ void NavMesh::generate() {
 	// Create edges
 	edges.reserve(nodes.size() * 4);
 
-	for (int node = 0; node < nodes.size(); node++) {
-		for (int other = 0; other < nodes.size(); other++) {
-			if (node == other) continue; // You can't connect to yourself
-			if ( has_connection(node, other) ) continue; // Check if already connected
+	for (int node = 0; node < nodes.size(); node++)
+	for (int other = 0; other < nodes.size(); other++) {
+		if (node == other) continue; // You can't connect to yourself
+		if ( has_connection(node, other) ) continue; // Check if already connected
 
-			// Check for possible connections
-			if ( can_walk(node, other) ) {
-				Edge e;
-				e.a = node;
-				e.b = other;
-				e.type = EdgeType::WALK;
+		b2Vec2 a = nodes[node].position;
+		b2Vec2 b = nodes[other].position;
 
-				edges.push_back(e);
-				nodes[node].edges.push_back(edges.size() - 1);
-				nodes[other].edges.push_back(edges.size() - 1);
+		// Check for possible connections
+		if ( can_walk(node, other) ) {
+			Edge e;
+			e.a = node;
+			e.b = other;
+			e.type = EdgeType::WALK;
+
+			edges.push_back(e);
+			nodes[node].edges.push_back(edges.size() - 1);
+			nodes[other].edges.push_back(edges.size() - 1);
+		}
+
+		else if ( can_fall(node, other) ) {
+			Edge e;
+			e.a = node;
+			e.b = other;
+			e.type = EdgeType::FALL;
+
+			edges.push_back(e);
+			nodes[node].edges.push_back(edges.size() - 1);
+			nodes[other].edges.push_back(edges.size() - 1);
+		}
+
+		else if ( can_jump(node, other) ) {
+			// Calculate jump velocity
+			b2Vec2 velocity = {INFINITY,INFINITY};
+			for (float s = 0.1; s < 2.0; s+=0.1) {
+				auto v = jump_velocity(a, b, s); // Find velocity for s
+
+				// Check if apex is between a and b
+				auto apex = jump_apex(a, v);
+				if ( apex.x < min(a.x, b.x) || apex.x > max(a.x, b.x) ) continue;
+
+				// Check if v has a smaller length than velocity
+				if ( b2Length(v) < b2Length(velocity) ) velocity = v;
 			}
 
-			else if ( can_fall(node, other) ) {
-				Edge e;
-				e.a = node;
-				e.b = other;
-				e.type = EdgeType::FALL;
+			// Check if the jump arc collides with tilemap
+			if ( jump_collides(a, b, velocity) ) continue;
 
-				edges.push_back(e);
-				nodes[node].edges.push_back(edges.size() - 1);
-				nodes[other].edges.push_back(edges.size() - 1);
-			}
+			// If the jump is good then add an edge
+			Edge e;
+			e.a = node;
+			e.b = other;
+			e.type = EdgeType::JUMP;
+			e.vel_ab = velocity;
+
+			edges.push_back(e);
+			nodes[node].edges.push_back(edges.size() - 1);
+			nodes[other].edges.push_back(edges.size() - 1);
 		}
 	}
 
@@ -77,11 +111,39 @@ void NavMesh::render() {
 			case EdgeType::FALL:
 				color = RED;
 				break;
+			case EdgeType::JUMP:
+				color = BLUE;
+				break;
 		}
 
-		auto pa = nodes[edge.a].position * world_scale;
-		auto pb = nodes[edge.b].position * world_scale;
-		DrawLine(pa.x, pa.y, pb.x, pb.y, color);
+		if (edge.type == EdgeType::JUMP) {
+			auto pa = nodes[edge.a].position;
+			auto pb = nodes[edge.b].position;
+
+			float lowest = min(pa.x, pb.x);
+			float highest = max(pa.x, pb.x);
+			float d = 0.1;
+
+			for (float x = lowest+d; x < highest+d; x+=d) {
+				b2Vec2 p0;
+				p0.x = x-d;
+				p0.y = projectile(edge.vel_ab, pa, p0.x);
+				p0 *= world_scale;
+
+				b2Vec2 p1;
+				p1.x = x;
+				p1.y = projectile(edge.vel_ab, pa, x);
+				p1 *= world_scale;
+
+				DrawLine(p0.x, p0.y, p1.x, p1.y, color);
+			}
+		}
+
+		else {
+			auto pa = nodes[edge.a].position * world_scale;
+			auto pb = nodes[edge.b].position * world_scale;
+			DrawLine(pa.x, pa.y, pb.x, pb.y, color);
+		}
 	}
 
 	// Draw a black dot at each node
@@ -115,6 +177,25 @@ bool NavMesh::can_walk(int a, int b) {
 	return true;
 }
 
+bool NavMesh::can_jump(int a, int b) {
+	// Get their integer coordinates
+	b2Vec2 pa = nodes[a].position;
+	b2Vec2 pb = nodes[b].position;
+	TileCoord ta = pa;
+	TileCoord tb = pb;
+
+	if (ta.x == tb.x) return false; // Check if they are directly overhead
+	if (b2Distance(pa, pb) > max_jump_dist) return false; // Check if they're too far apart
+
+	// Check if both points are the end of a platform
+	bool a_on_end = tilemap(ta.x+1, ta.y+1) == Tile::EMPTY || tilemap(ta.x-1, ta.y+1) == Tile::EMPTY;
+	bool b_on_end = tilemap(tb.x+1, tb.y+1) == Tile::EMPTY || tilemap(tb.x-1, tb.y+1) == Tile::EMPTY;
+	if ( !a_on_end || !b_on_end ) return false;
+
+	return true;
+}
+
+
 bool NavMesh::can_fall(int a, int b) {
 	// Get their integer coordinates
 	TileCoord ta = nodes[a].position;
@@ -144,4 +225,46 @@ bool NavMesh::can_fall(int a, int b) {
 	}
 
 	return true;
+}
+
+b2Vec2 NavMesh::jump_velocity(b2Vec2 a, b2Vec2 b, float s) {
+	b2Vec2 velocity = b2Vec2 {0,0};
+	velocity.x = 1.0 / s;
+
+	float duration = s * (b.x - a.x);
+	velocity.y = (b.y - (0.5 * gravity * pow(duration, 2)) - a.y) / duration;
+
+	return velocity;
+}
+
+b2Vec2 NavMesh::jump_apex(b2Vec2 a, b2Vec2 velocity) {
+	b2Vec2 apex = b2Vec2 {0,0};
+
+	apex.x = -(velocity.y/gravity) * velocity.x + a.x;
+	apex.y = projectile(velocity, a, apex.x);
+
+	return apex;
+}
+
+bool NavMesh::jump_collides(b2Vec2 a, b2Vec2 b, b2Vec2 velocity) {
+	float lowest = min(a.x, b.x);
+	float highest = max(a.x, b.x);
+
+	for (float x = lowest; x <= highest; x+=0.1) {
+		b2Vec2 p;
+		p.x = x;
+		p.y = projectile(velocity, a, x); // Get the hight of the jump arc at x
+		TileCoord tile = p; // Convert coordinates to TileCoord
+
+		// Check if there is a wall here the jump collides
+		if (tilemap(tile.x, tile.y) == Tile::WALL) return true;
+	}
+
+	return false;
+}
+
+float NavMesh::projectile(b2Vec2 v, b2Vec2 p0, float x) {
+	float t = (x - p0.x) / v.x;
+	float y = 0.5 * gravity * pow(t,2) + v.y * t + p0.y;
+	return y;
 }

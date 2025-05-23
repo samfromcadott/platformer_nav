@@ -35,7 +35,16 @@ private:
 	bool can_fall(int a, int b);
 	bool has_connection(int a, int b);
 
+	b2Vec2 jump_velocity(b2Vec2 a, b2Vec2 b, float s);
+	b2Vec2 jump_apex(b2Vec2 a, b2Vec2 velocity);
+	bool jump_collides(b2Vec2 a, b2Vec2 b, b2Vec2 velocity);
+
+	float projectile(b2Vec2 v, b2Vec2 p0, float x);
+
 public:
+	float gravity = 10.0;
+	float max_jump_dist = 10.0;
+
 	NavMesh(Tilemap& tilemap);
 
 	void generate();
