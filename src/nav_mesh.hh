@@ -5,11 +5,17 @@
 #include "physics.hh"
 
 class Tilemap;
+class Pathfinder;
 
 enum class EdgeType {
 	WALK,
 	JUMP,
 	FALL,
+};
+
+enum class EdgeDirection {
+	A_TO_B,
+	B_TO_A,
 };
 
 struct Node {
@@ -51,4 +57,6 @@ public:
 	void render() const;
 	const Node& get_closest(b2Vec2 position) const;
 	bool valid() const;
+
+	friend class Pathfinder;
 };

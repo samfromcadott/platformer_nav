@@ -12,6 +12,7 @@ add_executable(platformer_nav
 	src/interface.cc
 	src/tilemap.cc
 	src/nav_mesh.cc
+	src/pathfinder.cc
 )
 
 target_link_libraries(platformer_nav box2d raylib)
