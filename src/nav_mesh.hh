@@ -39,7 +39,7 @@ private:
 	b2Vec2 jump_apex(b2Vec2 a, b2Vec2 velocity);
 	bool jump_collides(b2Vec2 a, b2Vec2 b, b2Vec2 velocity);
 
-	float projectile(b2Vec2 v, b2Vec2 p0, float x);
+	float projectile(b2Vec2 v, b2Vec2 p0, float x) const;
 
 public:
 	float gravity = 10.0;
@@ -48,5 +48,7 @@ public:
 	NavMesh(Tilemap& tilemap);
 
 	void generate();
-	void render();
+	void render() const;
+	const Node& get_closest(b2Vec2 position) const;
+	bool valid() const;
 };

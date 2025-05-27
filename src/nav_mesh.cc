@@ -99,9 +99,9 @@ void NavMesh::generate() {
 	edges.shrink_to_fit();
 }
 
-void NavMesh::render() {
+void NavMesh::render() const {
 	// Draw a line between each node, lines are color coded based on type
-	for (auto& edge : edges) {
+	for (const auto& edge : edges) {
 		// Color based on edge type
 		Color color;
 		switch (edge.type) {
@@ -147,10 +147,30 @@ void NavMesh::render() {
 	}
 
 	// Draw a black dot at each node
-	for (auto& node : nodes) {
+	for (const auto& node : nodes) {
 		b2Vec2 p = node.position * world_scale;
 		DrawCircle(p.x, p.y, 2.0, BLACK);
 	}
+}
+
+const Node& NavMesh::get_closest(b2Vec2 position) const {
+	float dist = INFINITY;
+	int n = -1; // Index of closest node
+
+	for (int i = 0; i < nodes.size(); i++) {
+		float d = b2Distance(position, nodes[i].position);
+
+		if (d > dist) continue; // Move on if this isn't closer than dist
+
+		dist = d;
+		n = i;
+	}
+
+	return nodes[n];
+}
+
+bool NavMesh::valid() const {
+	return nodes.size() > 0;
 }
 
 bool NavMesh::has_connection(int a, int b) {
@@ -263,7 +283,7 @@ bool NavMesh::jump_collides(b2Vec2 a, b2Vec2 b, b2Vec2 velocity) {
 	return false;
 }
 
-float NavMesh::projectile(b2Vec2 v, b2Vec2 p0, float x) {
+float NavMesh::projectile(b2Vec2 v, b2Vec2 p0, float x) const {
 	float t = (x - p0.x) / v.x;
 	float y = 0.5 * gravity * pow(t,2) + v.y * t + p0.y;
 	return y;
