@@ -40,6 +40,7 @@ private:
 	bool can_jump(int a, int b);
 	bool can_fall(int a, int b);
 	bool has_connection(int a, int b);
+	int closest(b2Vec2 position) const;
 
 	b2Vec2 jump_velocity(b2Vec2 a, b2Vec2 b, float s);
 	b2Vec2 jump_apex(b2Vec2 a, b2Vec2 velocity);

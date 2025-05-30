@@ -153,7 +153,7 @@ void NavMesh::render() const {
 	}
 }
 
-const Node& NavMesh::get_closest(b2Vec2 position) const {
+int NavMesh::closest(b2Vec2 position) const {
 	float dist = INFINITY;
 	int n = -1; // Index of closest node
 
@@ -166,7 +166,11 @@ const Node& NavMesh::get_closest(b2Vec2 position) const {
 		n = i;
 	}
 
-	return nodes[n];
+	return n;
+}
+
+const Node& NavMesh::get_closest(b2Vec2 position) const {
+	return nodes[ closest(position) ];
 }
 
 bool NavMesh::valid() const {
