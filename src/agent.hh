@@ -14,6 +14,9 @@ public:
 	const float width = 1.0;
 	const float height = 2.0;
 
+	const float max_speed = 5.0;
+	const float jump_speed = 10.0;
+
 	Agent();
 	Agent(b2WorldId world, float x, float y);
 

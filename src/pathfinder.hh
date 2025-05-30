@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "nav_mesh.hh"
 #include "agent.hh"
 
@@ -21,7 +23,8 @@ private:
 	};
 
 	bool in_list(const std::vector<PathNode>& list, const PathNode& node) const;
-	float compute_cost(const int a, const int b) const;
+	int lowest_cost(const std::vector<PathNode>& list) const;
+	float compute_cost(const int edge, const EdgeDirection direction) const;
 	std::vector<PathNode> get_adjacent(const int node) const;
 	bool can_connect(const int edge, const EdgeDirection direction) const;
 
