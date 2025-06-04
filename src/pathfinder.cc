@@ -112,7 +112,7 @@ std::vector<PathSegment> Pathfinder::build_path(const std::vector<PathNode>& lis
 
 bool Pathfinder::in_list(const std::vector<PathNode>& list, const PathNode& node) const {
 	for (const auto& n : list)
-		if (n.node == node.node) return true;
+		if (n.node == node.node && n.edge == node.edge) return true;
 
 	return false;
 }
@@ -149,7 +149,7 @@ float Pathfinder::compute_cost(const int edge, const EdgeDirection direction) co
 			break;
 		case EdgeType::JUMP:
 			vx = direction == EdgeDirection::A_TO_B? e.vel_ab.x : e.vel_ba.x;
-			time = dx / abs(vx);
+			time = dx / abs(vx) * 5.0;
 			break;
 		case EdgeType::FALL:
 			time = sqrt( 2 *  dy/abs(nav_mesh.gravity) );
