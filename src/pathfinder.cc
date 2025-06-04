@@ -91,8 +91,6 @@ void Pathfinder::set_goal(b2Vec2 p) {
 
 std::vector<PathSegment> Pathfinder::build_path(const std::vector<PathNode>& list, int goal) {
 	std::vector<PathSegment> p;
-	// p.push_back( PathSegment{ {1,1}, {0,0} } );
-	// p.push_back( PathSegment{ {3,2}, {0,0} } );
 
 	int node = goal;
 	while (true) {
