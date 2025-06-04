@@ -48,6 +48,8 @@ void NavMesh::generate() {
 			e.a = node;
 			e.b = other;
 			e.type = EdgeType::WALK;
+			e.vel_ab = {1,0}; // TODO: Proper velocity
+			e.vel_ba = {-1,0};
 
 			edges.push_back(e);
 			nodes[node].edges.push_back(edges.size() - 1);
@@ -59,6 +61,8 @@ void NavMesh::generate() {
 			e.a = node;
 			e.b = other;
 			e.type = EdgeType::FALL;
+			e.vel_ab = {1,0}; // TODO: Proper velocity
+			e.vel_ba = {-1,0};
 
 			edges.push_back(e);
 			nodes[node].edges.push_back(edges.size() - 1);
@@ -88,6 +92,7 @@ void NavMesh::generate() {
 			e.b = other;
 			e.type = EdgeType::JUMP;
 			e.vel_ab = velocity;
+			e.vel_ba = -velocity; // TODO: Proper velocity
 
 			edges.push_back(e);
 			nodes[node].edges.push_back(edges.size() - 1);

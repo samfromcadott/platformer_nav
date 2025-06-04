@@ -17,9 +17,10 @@ private:
 
 	struct PathNode {
 		int node; // Index of node in nav_mesh
-		int parent; // Index of parent in nav_mesh
+		int parent; // Index of parent in closed list
 		int edge; // Edge by which node connects to parent
-		float cost;
+		float cost; // Time to get to this node from start
+		float distance; // Linear distance from goal
 	};
 
 	bool in_list(const std::vector<PathNode>& list, const PathNode& node) const;
@@ -27,6 +28,7 @@ private:
 	float compute_cost(const int edge, const EdgeDirection direction) const;
 	std::vector<PathNode> get_adjacent(const int node) const;
 	bool can_connect(const int edge, const EdgeDirection direction) const;
+	std::vector<PathSegment> build_path(const std::vector<PathNode>& list, int goal);
 
 public:
 	std::vector<PathSegment> path;
@@ -34,4 +36,5 @@ public:
 	Pathfinder(Agent& agent, NavMesh& nav_mesh);
 
 	void set_goal(b2Vec2 p);
+	void render();
 };

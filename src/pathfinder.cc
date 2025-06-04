@@ -1,3 +1,7 @@
+#include <iostream>
+#include <algorithm>
+#include <raylib.h>
+
 #include "pathfinder.hh"
 
 using namespace std;
@@ -6,32 +10,106 @@ Pathfinder::Pathfinder(Agent& agent, NavMesh& nav_mesh) : agent(agent), nav_mesh
 
 }
 
+void Pathfinder::render() {
+	if ( path.size() == 0 ) return;
+
+	for (int i = 0; i < path.size() - 1; i++) {
+		b2Vec2 p0 = path[i].start * world_scale;
+		b2Vec2 p1 = path[i+1].start * world_scale;
+
+		DrawCircle(p0.x, p0.y, 2, ORANGE);
+		DrawLine(p0.x, p0.y, p1.x, p1.y, ORANGE);
+	}
+}
+
 void Pathfinder::set_goal(b2Vec2 p) {
 	path.clear();
 
 	PathNode start;
+	int start_node = nav_mesh.closest( agent.get_position() );
 	int goal;
 
-	std::vector<PathNode> open = {start};
+	start = PathNode { start_node, -1, -1, 0.0, b2Distance(agent.get_position(), p) };
+	goal = nav_mesh.closest(p);
+
+	std::vector<PathNode> open;
 	std::vector<PathNode> closed;
+	bool goal_reached = false;
 
+	open.reserve( nav_mesh.nodes.size() ); closed.reserve( nav_mesh.nodes.size() );
+
+	open.push_back(start);
+
+	// A* search algorithm
 	while ( !open.empty() ) {
-		int current = lowest_cost(open);
-		if (open[current].node == goal) break;
+		// Find the cheapest node
+		int cheapest = lowest_cost(open);
 
-		// Move current to closed
-		closed.push_back( open[current] );
-		open.erase(open.begin() + current);
+		// Move cheapest to closed
+		closed.push_back( open[cheapest] );
+		open.erase(open.begin() + cheapest);
+		int current = closed.size() - 1; // Index of current in closed list
 
-		auto neighbors = get_adjacent(open[current].node); // Get adjacent to current
+		// If the goal has been reached search is complete
+		if (closed[current].node == goal) {
+			goal_reached = true;
+			break;
+		}
 
-		for (auto& node : neighbors) {
+		// Search through connected nodes
+		auto neighbors = get_adjacent(closed[current].node); // Get adjacent to current
+
+		for (auto node : neighbors) {
 			if ( in_list(open, node) ) continue;
 			if ( in_list(closed, node) ) continue;
 
+			node.parent = current;
+			node.distance = b2Distance(nav_mesh.nodes[node.node].position, p);
+			node.cost += closed[current].cost;
 			open.push_back(node);
 		}
 	}
+
+	// Build the path
+	int end = goal_reached? closed.size() - 1 : [&]{
+		// Find node closest to the goal
+		float dist = INFINITY;
+		int n = -1; // Index of closest node
+
+		for (int i = 0; i < closed.size(); i++) {
+			if (closed[i].distance > dist) continue; // Move on if this is farther than dist
+
+			dist = closed[i].distance;
+			n = i;
+		}
+
+		return n;
+	}();
+
+	path = build_path(closed, end);
+}
+
+std::vector<PathSegment> Pathfinder::build_path(const std::vector<PathNode>& list, int goal) {
+	std::vector<PathSegment> p;
+	// p.push_back( PathSegment{ {1,1}, {0,0} } );
+	// p.push_back( PathSegment{ {3,2}, {0,0} } );
+
+	int node = goal;
+	while (true) {
+		b2Vec2 start = nav_mesh.nodes[ list[node].node ].position;
+		b2Vec2 velocity = {0,0};
+
+		PathSegment segment = {start,velocity};
+
+		p.push_back(segment);
+
+		node = list[node].parent;
+		if (node == -1) break;
+	}
+
+	reverse(p.begin(), p.end());
+
+	return p;
 }
 
 bool Pathfinder::in_list(const std::vector<PathNode>& list, const PathNode& node) const {
@@ -46,7 +124,7 @@ int Pathfinder::lowest_cost(const std::vector<PathNode>& list) const {
 	int n = -1; // Index of cheapest node
 
 	for (int i = 0; i < list.size(); i++) {
-		float c = list[i].cost;
+		float c = list[i].cost + list[i].distance;
 
 		if (c > cost) continue; // Move on if this isn't cheaper than cost
 
@@ -92,7 +170,11 @@ std::vector<Pathfinder::PathNode> Pathfinder::get_adjacent(const int node) const
 
 		int other = direction == EdgeDirection::A_TO_B? nav_mesh.edges[edge].b : nav_mesh.edges[edge].a;
 
-		adjacent.push_back( PathNode {other, node, edge, compute_cost(edge, direction) });
+		PathNode new_node;
+		new_node.node = other;
+		new_node.edge = edge;
+		new_node.cost = compute_cost(edge, direction);
+		adjacent.push_back(new_node);
 	}
 
 	return adjacent;

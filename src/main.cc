@@ -10,6 +10,7 @@
 #include "interface.hh"
 #include "tilemap.hh"
 #include "nav_mesh.hh"
+#include "pathfinder.hh"
 
 using namespace std;
 
@@ -23,6 +24,7 @@ int main(int argc, char const *argv[]) {
 	Tilemap tilemap(world, 30, 30);
 	NavMesh nav_mesh(tilemap);
 	Agent agent(world, 10.0, 10.0);
+	Pathfinder pathfinder(agent, nav_mesh);
 
 	b2Vec2 closest = {-1000, -1000};
 
@@ -37,6 +39,7 @@ int main(int argc, char const *argv[]) {
 			auto target = get_target();
 			auto node = nav_mesh.get_closest( b2Vec2{target.x, target.y} );
 			closest = node.position;
+			pathfinder.set_goal( b2Vec2{target.x, target.y} );
 		}
 
 		BeginDrawing();
@@ -48,6 +51,7 @@ int main(int argc, char const *argv[]) {
 			tilemap.render();
 			nav_mesh.render();
 			agent.render();
+			pathfinder.render();
 			DrawCircle(closest.x*world_scale, closest.y*world_scale, 4.0, ORANGE);
 
 			EndMode2D();
