@@ -39,7 +39,7 @@ int main(int argc, char const *argv[]) {
 			auto target = get_target();
 			auto node = nav_mesh.get_closest( b2Vec2{target.x, target.y} );
 			closest = node.position;
-			pathfinder.set_goal( b2Vec2{target.x, target.y} );
+			agent.path = pathfinder.set_goal( b2Vec2{target.x, target.y} );
 		}
 
 		BeginDrawing();

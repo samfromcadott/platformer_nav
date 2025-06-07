@@ -1,14 +1,18 @@
 #pragma once
 
 #include <vector>
+#include <deque>
 
 #include "nav_mesh.hh"
-#include "agent.hh"
+
+class Agent;
 
 struct PathSegment {
 	b2Vec2 start;
 	b2Vec2 velocity;
 };
+
+typedef std::deque<PathSegment> Path;
 
 class Pathfinder {
 private:
@@ -28,13 +32,13 @@ private:
 	float compute_cost(const int edge, const EdgeDirection direction) const;
 	std::vector<PathNode> get_adjacent(const int node) const;
 	bool can_connect(const int edge, const EdgeDirection direction) const;
-	std::vector<PathSegment> build_path(const std::vector<PathNode>& list, int goal);
+	Path build_path(const std::vector<PathNode>& list, int goal);
 
 public:
-	std::vector<PathSegment> path;
+	Path path;
 
 	Pathfinder(Agent& agent, NavMesh& nav_mesh);
 
-	void set_goal(b2Vec2 p);
+	Path set_goal(b2Vec2 p);
 	void render();
 };

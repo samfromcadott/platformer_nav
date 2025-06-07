@@ -3,6 +3,7 @@
 #include <raylib.h>
 
 #include "pathfinder.hh"
+#include "agent.hh"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ void Pathfinder::render() {
 	}
 }
 
-void Pathfinder::set_goal(b2Vec2 p) {
+Path Pathfinder::set_goal(b2Vec2 p) {
 	path.clear();
 
 	PathNode start;
@@ -86,21 +87,32 @@ void Pathfinder::set_goal(b2Vec2 p) {
 		return n;
 	}();
 
-	path = build_path(closed, end);
+	return build_path(closed, end);
 }
 
-std::vector<PathSegment> Pathfinder::build_path(const std::vector<PathNode>& list, int goal) {
-	std::vector<PathSegment> p;
+Path Pathfinder::build_path(const std::vector<PathNode>& list, int goal) {
+	Path p;
 
 	int node = goal;
+	int child = -1; // Previous node evaluated
 	while (true) {
-		b2Vec2 start = nav_mesh.nodes[ list[node].node ].position;
+		int n = list[node].node; // Node index in nav_mesh
+
+		// Get start location
+		b2Vec2 start = nav_mesh.nodes[n].position;
+
+		// Determine the velocity
 		b2Vec2 velocity = {0,0};
+		if (child != -1) {
+			Edge edge = nav_mesh.edges[ list[child].edge ];
+			velocity = n == edge.a? edge.vel_ab : edge.vel_ba;
+		}
 
 		PathSegment segment = {start,velocity};
 
 		p.push_back(segment);
 
+		child = node;
 		node = list[node].parent;
 		if (node == -1) break;
 	}
