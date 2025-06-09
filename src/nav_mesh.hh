@@ -48,6 +48,10 @@ private:
 
 	float projectile(b2Vec2 v, b2Vec2 p0, float x) const;
 
+	void add_walk_edge(int a, int b);
+	void add_jump_edge(int a, int b);
+	void add_fall_edge(int a, int b);
+
 public:
 	float gravity = 10.0;
 	float max_jump_dist = 10.0;
