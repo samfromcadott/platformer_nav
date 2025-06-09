@@ -80,12 +80,15 @@ void Agent::update() {
 	}
 
 	// If the agent gets to the next segment
-	if ( path.size() > 1 && b2Distance(get_position(), path[1].start) < 1.0 ) {
+	if ( path.size() > 1 && at(path[1].start) ) {
 		path.pop_front();
 		set_velocity(path[0].velocity);
 	}
+}
 
-	// // If current segment is a jump
-	// if (path[0].velocity.y != 0.0)
-	// 	set_velocity(path[0].velocity);
+bool Agent::at(b2Vec2 p) {
+	float dx = abs(get_position().x - p.x);
+	float dy = abs(get_position().y - p.y);
+
+	return dx < 0.1 && dy < 0.75;
 }

@@ -10,6 +10,8 @@ private:
 	b2WorldId world;
 	b2BodyId body;
 
+	bool at(b2Vec2 p);
+
 public:
 	const float width = 1.0;
 	const float height = 2.0;
