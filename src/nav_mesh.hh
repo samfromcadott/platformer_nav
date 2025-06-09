@@ -42,6 +42,7 @@ private:
 	bool has_connection(int a, int b);
 	int closest(b2Vec2 position) const;
 
+	b2Vec2 best_jump(b2Vec2 a, b2Vec2 b);
 	b2Vec2 jump_velocity(b2Vec2 a, b2Vec2 b, float s);
 	b2Vec2 jump_apex(b2Vec2 a, b2Vec2 velocity);
 	bool jump_collides(b2Vec2 a, b2Vec2 b, b2Vec2 velocity);

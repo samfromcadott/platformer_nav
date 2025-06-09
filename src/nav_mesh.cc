@@ -200,12 +200,30 @@ bool NavMesh::can_fall(int a, int b) {
 	return true;
 }
 
+b2Vec2 NavMesh::best_jump(b2Vec2 a, b2Vec2 b) {
+	b2Vec2 velocity = {INFINITY,INFINITY};
+	for (float s = 0.1; s < 2.0; s+=0.1) {
+		auto v = jump_velocity(a, b, s); // Find velocity for s
+
+		// Check if apex is between a and b
+		auto apex = jump_apex(a, v);
+		if ( apex.x < min(a.x, b.x) || apex.x > max(a.x, b.x) ) continue;
+
+		// Check if v has a smaller length than velocity
+		if ( b2Length(v) < b2Length(velocity) ) velocity = v;
+	}
+
+	return velocity;
+}
+
 b2Vec2 NavMesh::jump_velocity(b2Vec2 a, b2Vec2 b, float s) {
 	b2Vec2 velocity = b2Vec2 {0,0};
 	velocity.x = 1.0 / s;
+	velocity.x = b.x - a.x < 0? -velocity.x : velocity.x;
 
 	float duration = s * (b.x - a.x);
 	velocity.y = (b.y - (0.5 * gravity * pow(duration, 2)) - a.y) / duration;
+	velocity.y = -abs(velocity.y);
 
 	return velocity;
 }
@@ -259,29 +277,20 @@ void NavMesh::add_jump_edge(int a, int b) {
 	b2Vec2 pa = nodes[a].position;
 	b2Vec2 pb = nodes[b].position;
 
-	// Calculate jump velocity
-	b2Vec2 velocity = {INFINITY,INFINITY};
-	for (float s = 0.1; s < 2.0; s+=0.1) {
-		auto v = jump_velocity(pa, pb, s); // Find velocity for s
+	// Calculate velocity
+	b2Vec2 vel_ab = best_jump(pa, pb);
+	b2Vec2 vel_ba = best_jump(pb, pa);
 
-		// Check if apex is between a and b
-		auto apex = jump_apex(pa, v);
-		if ( apex.x < min(pa.x, pb.x) || apex.x > max(pa.x, pb.x) ) continue;
-
-		// Check if v has a smaller length than velocity
-		if ( b2Length(v) < b2Length(velocity) ) velocity = v;
-	}
-
-	// Check if the jump arc collides with tilemap
-	if ( jump_collides(pa, pb, velocity) ) return;
+	if ( jump_collides(pa, pb, vel_ab) ) return;
+	if ( jump_collides(pb, pa, vel_ba) ) return;
 
 	// If the jump is good then add an edge
 	Edge e;
 	e.a = a;
 	e.b = b;
 	e.type = EdgeType::JUMP;
-	e.vel_ab = velocity;
-	e.vel_ba = -velocity; // TODO: Proper velocity
+	e.vel_ab = vel_ab;
+	e.vel_ba = vel_ba;
 
 	edges.push_back(e);
 	nodes[a].edges.push_back(edges.size() - 1);
