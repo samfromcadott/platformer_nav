@@ -65,17 +65,17 @@ void Tilemap::generate_collision() {
 	}
 
 	// Add the outer walls
-	b2Segment wall_top = {{0,0}, {width, 0}};
+	// b2Segment wall_top = {{0,0}, {width, 0}};
 	b2Segment wall_bottom = {{0,height}, {width, height}};
 	b2Segment wall_left = {{0,0}, {0, height}};
 	b2Segment wall_right = {{width,0}, {width, height}};
 
-	auto shape_top = b2DefaultShapeDef();
+	// auto shape_top = b2DefaultShapeDef();
 	auto shape_bottom = b2DefaultShapeDef();
 	auto shape_left = b2DefaultShapeDef();
 	auto shape_right = b2DefaultShapeDef();
 
-	b2CreateSegmentShape(body, &shape_top, &wall_top);
+	// b2CreateSegmentShape(body, &shape_top, &wall_top);
 	b2CreateSegmentShape(body, &shape_bottom, &wall_bottom);
 	b2CreateSegmentShape(body, &shape_left, &wall_left);
 	b2CreateSegmentShape(body, &shape_right, &wall_right);
