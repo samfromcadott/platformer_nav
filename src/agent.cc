@@ -3,6 +3,7 @@
 
 #include "agent.hh"
 #include "pathfinder.hh"
+#include "util.hh"
 
 Agent::Agent(b2WorldId world, float x, float y) {
 	b2BodyDef bodyDef = b2DefaultBodyDef();
@@ -12,12 +13,18 @@ Agent::Agent(b2WorldId world, float x, float y) {
 
 	body = b2CreateBody(world, &bodyDef);
 
-	b2Polygon box = b2MakeBox(width/2.0, height/2.0);
+	b2Polygon box = b2MakeBox(width/2.0 * 0.8, height/2.0);
+
+	b2Capsule capsule;
+	capsule.center1 = b2Vec2 {0.0f, static_cast<float>(-(height/2.0 - width/2.0))};
+	capsule.center2 = b2Vec2 {0.0f, static_cast<float>(height/2.0 - width/2.0)};
+	capsule.radius = width / 2.0;
 
 	b2ShapeDef shapeDef = b2DefaultShapeDef();
 	shapeDef.density = 1.0f;
-	shapeDef.friction = 0.0f;
+	shapeDef.material.friction = 0.0f;
 	b2CreatePolygonShape(body, &shapeDef, &box);
+	// b2CreateCapsuleShape(body, &shapeDef, &capsule);
 }
 
 b2Vec2 Agent::get_position() const {
@@ -46,6 +53,11 @@ void Agent::set_velocity(b2Vec2 v) {
 	set_velocity(v.x, v.y);
 }
 
+void Agent::move_towards(b2Vec2 point, float speed) {
+	float dx = point.x - get_position().x;
+	set_velocity( sign(dx) * abs(speed), get_velocity().y );
+}
+
 void Agent::render() {
 	auto position = get_position();
 
@@ -72,23 +84,30 @@ void Agent::render() {
 void Agent::update() {
 	if (path.size() == 0) return;
 
-	// If current segment is not a jump
-	if (path[0].velocity.y == 0.0) {
-		float vx = path[0].velocity.x * max_speed;
-		float vy = get_velocity().y;
-		set_velocity(vx, vy); // Move in the segment's direction
-	}
+	// Move towards next point
+	int sub_goal = path.size() > 1? 1 : 0; // If there are multiple points move to next, else move to final
+	float vx = path[0].velocity.y == 0.0? max_speed : path[0].velocity.x; // On jump segments use its speed for accuracy
+	move_towards(path[sub_goal].start, vx);
 
 	// If the agent gets to the next segment
 	if ( path.size() > 1 && at(path[1].start) ) {
 		path.pop_front();
 		set_velocity(path[0].velocity);
 	}
+
+	// If the agent is at the end of the path
+	else if ( path.size() == 1 && at(path[0].start) ) {
+		path.clear();
+		set_velocity(0,0);
+	}
 }
 
 bool Agent::at(b2Vec2 p) {
-	float dx = abs(get_position().x - p.x);
 	float dy = abs(get_position().y - p.y);
 
-	return dx < 0.1 && dy < 0.75;
+	return at_x(p) && dy < 0.75;
+}
+
+bool Agent::at_x(b2Vec2 p) {
+	return abs(get_position().x - p.x) < 0.1;
 }

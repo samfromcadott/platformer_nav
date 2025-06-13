@@ -43,5 +43,6 @@ void get_input(Tilemap& tilemap, NavMesh& nav_mesh, Agent& agent) {
 		auto p = get_target();
 		agent.set_position(p.x, p.y);
 		agent.set_velocity(0.0,0.0);
+		agent.path.clear();
 	}
 }

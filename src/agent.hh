@@ -11,6 +11,7 @@ private:
 	b2BodyId body;
 
 	bool at(b2Vec2 p);
+	bool at_x(b2Vec2 p);
 
 public:
 	const float width = 1.0;
@@ -31,6 +32,7 @@ public:
 	b2Vec2 get_velocity() const;
 	void set_velocity(float x, float y);
 	void set_velocity(b2Vec2 v);
+	void move_towards(b2Vec2 point, float speed);
 
 	void update();
 	void render();

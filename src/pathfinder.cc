@@ -194,12 +194,12 @@ bool Pathfinder::can_connect(const int edge, const EdgeDirection direction) cons
 	const Edge& e = nav_mesh.edges[edge];
 
 	if (direction == EdgeDirection::A_TO_B) {
-		if (abs(e.vel_ab.x) <= agent.max_speed && e.vel_ab.y <= agent.jump_speed)
+		if (abs(e.vel_ab.x) <= agent.max_speed && abs(e.vel_ab.y) <= agent.jump_speed)
 			return true;
 	}
 
 	else if (direction == EdgeDirection::B_TO_A) {
-		if (abs(e.vel_ba.x) <= agent.max_speed && e.vel_ba.y <= agent.jump_speed)
+		if (abs(e.vel_ba.x) <= agent.max_speed && abs(e.vel_ba.y) <= agent.jump_speed)
 			return true;
 	}
 

@@ -100,9 +100,10 @@ void Tilemap::add_collider(unsigned int x, unsigned int y) {
 	Vector2 center = tile_to_world(x,y);
 	center = Vector2Divide( center, Vector2 {world_scale, world_scale} );
 
-	b2Polygon box = b2MakeOffsetBox(size, size, b2Vec2 {center.x + size, center.y + size}, 0.0f);
+	b2Polygon box = b2MakeOffsetBox(size, size, b2Vec2 {center.x + size, center.y + size}, b2MakeRot(0.0f));
 
 	b2ShapeDef shape_def = b2DefaultShapeDef();
+	shape_def.material.friction = 1.0f;
 	b2CreatePolygonShape(body, &shape_def, &box);
 }
 

@@ -4,3 +4,4 @@ thirdparty/
 *.exe
 *.lib
 *.dll
+*.zip

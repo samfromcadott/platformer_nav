@@ -209,6 +209,9 @@ b2Vec2 NavMesh::best_jump(b2Vec2 a, b2Vec2 b) {
 		auto apex = jump_apex(a, v);
 		if ( apex.x < min(a.x, b.x) || apex.x > max(a.x, b.x) ) continue;
 
+		// Check if apex is above higher point
+		if ( abs(apex.y - min(a.y, b.y)) < 0.5 ) continue;
+
 		// Check if v has a smaller length than velocity
 		if ( b2Length(v) < b2Length(velocity) ) velocity = v;
 	}
@@ -298,12 +301,15 @@ void NavMesh::add_jump_edge(int a, int b) {
 }
 
 void NavMesh::add_fall_edge(int a, int b) {
+	b2Vec2 pa = nodes[a].position;
+	b2Vec2 pb = nodes[b].position;
+
 	Edge e;
 	e.a = a;
 	e.b = b;
 	e.type = EdgeType::FALL;
-	e.vel_ab = {1,0}; // TODO: Proper velocity
-	e.vel_ba = {-1,0};
+	e.vel_ab = pa.y < pb.y? b2Vec2 {1,0} : best_jump(pa, pb);
+	e.vel_ba = pb.y < pa.y? b2Vec2 {-1,0} : best_jump(pb, pa);
 
 	edges.push_back(e);
 	nodes[a].edges.push_back(edges.size() - 1);
