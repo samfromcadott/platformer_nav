@@ -1,10 +1,10 @@
 2D Platformer Navigation
-----------
+==========
 
 This is a project to create AI navigation for 2D platformers. Walking and jumping work fine but falling still has some issues.
 
 Building
-==========
+----------
 
 1. Make a `build` directory
 
